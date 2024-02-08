@@ -1,4 +1,5 @@
 use anyhow::Result;
+use dotenv::dotenv;
 use sqlx::{
     mysql::{MySqlPool, MySqlPoolOptions},
     MySql, Pool,
@@ -10,7 +11,10 @@ type Db = Pool<MySql>;
 const CREATE_DEV_DB_SQL: &str = "sql/create_dev_db.sql";
 
 pub async fn init_dev_db() -> Result<()> {
-    let root_db = init_db_pool(&env::var("DATABASE_URL").unwrap()).await?;
+    dotenv().ok();
+
+    let db_url = &env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
+    let root_db = init_db_pool(&db_url).await?;
     pexec(CREATE_DEV_DB_SQL, &root_db).await?;
     Ok(())
 }
